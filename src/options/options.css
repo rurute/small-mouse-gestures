@@ -191,6 +191,16 @@ body {
   color: var(--accent);
 }
 
+/*
+ * 追加ボタンは記録枠の外に置く。枠の中に置くと、無効化されたボタンが
+ * 描画領域の一部を覆い、そこを起点にしたドラッグが記録されない
+ * （Chrome では無効なボタンはマウスイベントを発火せず、親にも伝わらない）。
+ */
+.record-add {
+  display: block;
+  margin: 12px auto 0;
+}
+
 .record-result code {
   font: 17px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
 }
