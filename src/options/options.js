@@ -1,6 +1,7 @@
 import { ACTIONS } from '../shared/actions.js';
 import { defaultSettings, loadSettings, saveSettings } from '../shared/settings.js';
 import { createStroke } from '../content/recognizer.js';
+import { createSuppressor } from '../content/suppressor.js';
 
 const ROCKER_KEYS = ['rocker:left', 'rocker:right'];
 const ROCKER_LABELS = {
@@ -9,6 +10,20 @@ const ROCKER_LABELS = {
 };
 const RIGHT_BUTTON = 2;
 const STATUS_LINGER_MS = 3000;
+const CONTEXT_MENU_TTL_MS = 500;
+
+const contextMenuSuppressor = createSuppressor({ ttlMs: CONTEXT_MENU_TTL_MS });
+
+// 記録の直後に飛んでくる contextmenu を 1 回だけ抑止する。
+// コンテンツスクリプト側と同じ仕組みで、フラグが残留しても TTL で自動解除される。
+document.addEventListener(
+  'contextmenu',
+  (event) => {
+    if (!contextMenuSuppressor.consume(performance.now())) return;
+    event.preventDefault();
+  },
+  true,
+);
 
 let settings = defaultSettings();
 let recorded = '';
@@ -106,29 +121,22 @@ function wireRecorder() {
   const addButton = document.getElementById('add-recorded');
   let stroke = null;
 
-  area.addEventListener('contextmenu', (event) => event.preventDefault());
-
-  area.addEventListener('mousedown', (event) => {
-    if (event.button !== RIGHT_BUTTON) return;
-    event.preventDefault();
-    const stepPx = Number(document.getElementById('stepPx').value) || settings.thresholds.stepPx;
-    stroke = createStroke({ stepPx });
-    stroke.addPoint(event.clientX, event.clientY);
-    recorded = '';
-    result.textContent = '記録中…';
-    addButton.disabled = true;
-  });
-
-  area.addEventListener('mousemove', (event) => {
+  // ジェスチャは記録枠より大きく描かれるのが普通なので、記録中は document 全体で
+  // イベントを拾う。枠の外でボタンを離しても記録が終わらない、という状態を防ぐ。
+  function onMove(event) {
     if (!stroke) return;
     stroke.addPoint(event.clientX, event.clientY);
     result.textContent = stroke.directions || '記録中…';
-  });
+  }
 
-  area.addEventListener('mouseup', (event) => {
+  function onUp(event) {
     if (event.button !== RIGHT_BUTTON || !stroke) return;
+    event.preventDefault();
     recorded = stroke.directions;
     stroke = null;
+    document.removeEventListener('mousemove', onMove, true);
+    document.removeEventListener('mouseup', onUp, true);
+    contextMenuSuppressor.arm(performance.now());
 
     if (!recorded) {
       result.textContent = '認識できませんでした。もう少し大きく動かしてください。';
@@ -141,6 +149,19 @@ function wireRecorder() {
     }
     result.textContent = recorded;
     addButton.disabled = false;
+  }
+
+  area.addEventListener('mousedown', (event) => {
+    if (event.button !== RIGHT_BUTTON) return;
+    event.preventDefault();
+    const stepPx = Number(document.getElementById('stepPx').value) || settings.thresholds.stepPx;
+    stroke = createStroke({ stepPx });
+    stroke.addPoint(event.clientX, event.clientY);
+    recorded = '';
+    result.textContent = '記録中…';
+    addButton.disabled = true;
+    document.addEventListener('mousemove', onMove, true);
+    document.addEventListener('mouseup', onUp, true);
   });
 }
 
@@ -153,18 +174,23 @@ function onAddRecorded() {
   render();
 }
 
-function clamp(value, min, max, fallback) {
+/**
+ * 入力値を検証する。数値でない値も範囲外の値も既定値に戻す。
+ * src/shared/settings.js の pickInt と同じ方針にそろえてある。
+ */
+function pickInRange(value, min, max, fallback) {
   if (!Number.isFinite(value)) return fallback;
-  return Math.min(max, Math.max(min, Math.round(value)));
+  const rounded = Math.round(value);
+  return rounded >= min && rounded <= max ? rounded : fallback;
 }
 
 function readForm() {
-  settings.thresholds.startPx = clamp(Number(document.getElementById('startPx').value), 1, 200, 12);
-  settings.thresholds.stepPx = clamp(Number(document.getElementById('stepPx').value), 1, 200, 16);
+  settings.thresholds.startPx = pickInRange(Number(document.getElementById('startPx').value), 1, 200, 12);
+  settings.thresholds.stepPx = pickInRange(Number(document.getElementById('stepPx').value), 1, 200, 16);
   settings.overlay.trail = document.getElementById('trail').checked;
   settings.overlay.label = document.getElementById('label').checked;
   settings.overlay.color = document.getElementById('color').value;
-  settings.overlay.width = clamp(Number(document.getElementById('width').value), 1, 20, 3);
+  settings.overlay.width = pickInRange(Number(document.getElementById('width').value), 1, 20, 3);
 }
 
 async function onSave() {
