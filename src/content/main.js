@@ -172,7 +172,27 @@ function runBinding(key) {
     return;
   }
 
-  console.debug(`[mouse-gestures] background へのディスパッチは未実装: ${action.id}`);
+  sendToBackground(action.id);
+}
+
+/**
+ * サービスワーカーへアクションを委譲する。
+ * MV3 のサービスワーカーはサスペンドされるため、初回は起動待ちで
+ * 失敗しうる。1 度だけ再送し、それでも駄目なら画面に表示する。
+ */
+async function sendToBackground(actionId, attempt = 0) {
+  try {
+    const response = await chrome.runtime.sendMessage({ type: 'runAction', actionId });
+    if (response?.ok) return;
+    throw new Error(response?.error ?? '応答がありませんでした');
+  } catch (error) {
+    if (attempt === 0) {
+      await sendToBackground(actionId, 1);
+      return;
+    }
+    console.warn('[mouse-gestures] アクションの実行に失敗しました', error);
+    overlay.flashError(`実行に失敗しました: ${actionId}`);
+  }
 }
 
 /** 認識中のジェスチャを「DR → タブを閉じる」の形で表す。 */
