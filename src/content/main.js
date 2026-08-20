@@ -64,10 +64,15 @@ window.addEventListener('contextmenu', onContextMenu, LISTENER_OPTIONS);
 window.addEventListener('click', onClick, LISTENER_OPTIONS);
 window.addEventListener('keydown', onKeyDown, LISTENER_OPTIONS);
 // mouseup が届かないケース（ウィンドウ外での離上、タブ切替）で状態が残らないようにする。
-window.addEventListener('blur', onReset, true);
+// blur はキャプチャ指定にしないこと。キャプチャするとページ内のあらゆる要素の
+// blur を拾ってしまい、右ボタン押下でフォーカスが移動した瞬間に
+// ジェスチャがリセットされる。ウィンドウ自身の blur はターゲット段階で届く。
+window.addEventListener('blur', onReset, false);
 document.addEventListener('visibilitychange', onReset, true);
 
 function onMouseEvent(event) {
+  // ページが dispatchEvent した合成イベントで拡張を操作されないようにする。
+  if (!event.isTrusted) return;
   pointerX = event.clientX;
   pointerY = event.clientY;
   applyEffects(
@@ -82,6 +87,8 @@ function onMouseEvent(event) {
 }
 
 function onKeyDown(event) {
+  // ページが dispatchEvent した合成イベントで拡張を操作されないようにする。
+  if (!event.isTrusted) return;
   applyEffects(
     machine.handle({ type: 'keydown', key: event.key, x: pointerX, y: pointerY }),
     event,
