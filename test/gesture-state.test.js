@@ -190,6 +190,34 @@ test('右ボタンが押されていない左クリックはロッカーにな�
   assert.equal(machine.state, STATE.ARMED_LEFT);
 });
 
+test('右ボタンを押したままの左ボタン離上は click を抑止する', () => {
+  // rocker:right で左ボタンを保持したまま遷移した先での離上。
+  // 押下を見ていないので抑止が何も立っておらず、放置すると
+  // click がカーソル下のリンクを踏む。
+  const machine = createMachine({ startPx: 12 });
+  assert.equal(machine.state, STATE.IDLE);
+  const effects = machine.handle({ type: 'mouseup', button: LEFT, buttons: 2, x: 0, y: 0 });
+  assert.deepEqual(types(effects), ['suppressClick']);
+});
+
+test('rocker:left のあとの左ボタン離上でも click 抑止を張り直す', () => {
+  // 押下時に立てた抑止は TTL 切れになりうるので、離上でも張り直す。
+  const machine = createMachine({ startPx: 12 });
+  machine.handle(down(RIGHT, 0, 0));
+  machine.handle({ type: 'mousedown', button: LEFT, buttons: 3, x: 0, y: 0 });
+  const effects = machine.handle({ type: 'mouseup', button: LEFT, buttons: 2, x: 0, y: 0 });
+  assert.deepEqual(types(effects), ['suppressClick']);
+  assert.equal(machine.state, STATE.ARMED_RIGHT);
+});
+
+test('右ボタンを押していない普通の左ボタン離上は抑止しない', () => {
+  const machine = createMachine({ startPx: 12 });
+  machine.handle({ type: 'mousedown', button: LEFT, buttons: 1, x: 0, y: 0 });
+  assert.equal(machine.state, STATE.ARMED_LEFT);
+  assert.deepEqual(machine.handle({ type: 'mouseup', button: LEFT, buttons: 0, x: 0, y: 0 }), []);
+  assert.equal(machine.state, STATE.IDLE);
+});
+
 test('左ボタン待機中の右ボタン離上は抑止しない', () => {
   const machine = createMachine({ startPx: 12 });
   machine.handle(down(LEFT, 0, 0));

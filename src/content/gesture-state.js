@@ -143,8 +143,23 @@ export function createMachine({ startPx = DEFAULT_START_PX } = {}) {
       return [];
     }
 
-    if (event.button === LEFT_BUTTON && state === STATE.ARMED_LEFT) {
-      goIdle();
+    if (event.button === LEFT_BUTTON) {
+      if (state === STATE.ARMED_LEFT) {
+        goIdle();
+        return [];
+      }
+
+      // 右ボタンを押したままの左ボタン離上は、ロッカー操作の一部とみなして
+      // 続く click を抑止する。次の 2 つの穴が塞がる。
+      //
+      // 1. rocker:right では左ボタンが右クリックより前から押されており、
+      //    遷移先で離される。遷移先は押下を見ていないため何も抑止しておらず、
+      //    click がカーソル下のリンクを踏む。
+      // 2. rocker:left のあと左ボタンを長く持つと、押下時に立てた抑止が
+      //    TTL 切れになり、離上時の click が素通りする。
+      if (rightButtonHeld(event)) {
+        return [{ type: 'suppressClick' }];
+      }
     }
 
     return [];
