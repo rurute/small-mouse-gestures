@@ -1,5 +1,14 @@
 import { ACTIONS } from '../shared/actions.js';
-import { defaultSettings, loadSettings, saveSettings } from '../shared/settings.js';
+import {
+  DEFAULTS,
+  PX_MIN,
+  PX_MAX,
+  WIDTH_MIN,
+  WIDTH_MAX,
+  defaultSettings,
+  loadSettings,
+  saveSettings,
+} from '../shared/settings.js';
 import { createStroke } from '../content/recognizer.js';
 import { createSuppressor } from '../content/suppressor.js';
 
@@ -185,12 +194,21 @@ function pickInRange(value, min, max, fallback) {
 }
 
 function readForm() {
-  settings.thresholds.startPx = pickInRange(Number(document.getElementById('startPx').value), 1, 200, 12);
-  settings.thresholds.stepPx = pickInRange(Number(document.getElementById('stepPx').value), 1, 200, 16);
+  settings.thresholds.startPx = pickInRange(
+    Number(document.getElementById('startPx').value),
+    PX_MIN, PX_MAX, DEFAULTS.thresholds.startPx,
+  );
+  settings.thresholds.stepPx = pickInRange(
+    Number(document.getElementById('stepPx').value),
+    PX_MIN, PX_MAX, DEFAULTS.thresholds.stepPx,
+  );
   settings.overlay.trail = document.getElementById('trail').checked;
   settings.overlay.label = document.getElementById('label').checked;
   settings.overlay.color = document.getElementById('color').value;
-  settings.overlay.width = pickInRange(Number(document.getElementById('width').value), 1, 20, 3);
+  settings.overlay.width = pickInRange(
+    Number(document.getElementById('width').value),
+    WIDTH_MIN, WIDTH_MAX, DEFAULTS.overlay.width,
+  );
 }
 
 async function onSave() {

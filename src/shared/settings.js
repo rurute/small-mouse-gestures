@@ -18,10 +18,10 @@ export const DEFAULTS = Object.freeze({
   overlay: Object.freeze({ trail: true, label: true, color: '#4a9eff', width: 3 }),
 });
 
-const PX_MIN = 1;
-const PX_MAX = 200;
-const WIDTH_MIN = 1;
-const WIDTH_MAX = 20;
+export const PX_MIN = 1;
+export const PX_MAX = 200;
+export const WIDTH_MIN = 1;
+export const WIDTH_MAX = 20;
 
 /** DEFAULTS の変更可能な複製を返す。 */
 export function defaultSettings() {
