@@ -69,9 +69,10 @@ export function createOverlay(options) {
   }
 
   function draw() {
-    if (!context || !config.trail) return;
+    if (!context) return;
+    // 先に必ず消す。実行中に軌跡表示がオフへ切り替わっても描き残しが残らない。
     clearCanvas();
-    if (points.length < 2) return;
+    if (!config.trail || points.length < 2) return;
 
     context.beginPath();
     context.moveTo(points[0].x, points[0].y);
@@ -120,8 +121,9 @@ export function createOverlay(options) {
     },
 
     setLabel(text) {
-      if (!config.label) return;
-      showLabel(text, 0);
+      // 表示がオフのときは空文字を渡して隠す。実行中にオフへ切り替わった場合に
+      // すでに出ているラベルが残らないようにするため。
+      showLabel(config.label ? text : '', 0);
     },
 
     end() {
