@@ -154,11 +154,23 @@ python3 tools/package.py
 `manifest.json` の `version` を上げること（ウェブストアは同一バージョンの
 再アップロードを受け付けない）。
 
-## まだ用意していないもの
+## スクリーンショット
 
-- スクリーンショット（1280×800 または 640×400、1 枚以上）
-- プライバシーポリシーの URL
-  - 本文は `PRIVACY.md` に用意済み
-  - リポジトリを public にした時点で URL が有効になる
-  - 提出時に入力する URL: https://github.com/rurute/small-mouse-gestures/blob/main/PRIVACY.md
+`docs/screenshots/` に 3 枚（いずれも 1280×800）。掲載順は次のとおり。
+
+1. `gesture-trail.png` — 右ドラッグ中の軌跡と認識結果ラベル
+2. `options-light.png` — 設定画面（ライト）
+3. `options-dark.png` — 設定画面（ダーク）
+
+## プライバシーポリシーの URL
+
+提出時に入力する URL。リポジトリを public にすると有効になる。
+
+```
+https://github.com/rurute/small-mouse-gestures/blob/main/PRIVACY.md
+```
+
+## 提出前に済ませておくこと
+
 - 開発者登録（$5、初回のみ）
+- リポジトリを public に切り替える（上記 URL を有効にするため）

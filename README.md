@@ -74,18 +74,28 @@ ZIP を作らずに中断する。
 
 | ファイル | 役割 |
 |---|---|
+| `src/content/loader.js` | コンテンツスクリプトの入口。モジュール本体を動的 import する |
+| `src/content/main.js` | イベント配線と副作用の適用 |
 | `src/content/recognizer.js` | 点列 → 方向文字列（純粋関数） |
 | `src/content/gesture-state.js` | ストロークとロッカーの状態機械（純粋ロジック） |
 | `src/content/suppressor.js` | TTL 付きワンショット抑止フラグ（純粋ロジック） |
-| `src/content/main.js` | イベント配線と副作用の適用 |
 | `src/content/overlay.js` | 軌跡とラベルの描画 |
+| `src/content/actions-content.js` | ページ内で完結するアクションの実装 |
 | `src/shared/actions.js` | アクション定義の唯一の定義元 |
 | `src/shared/settings.js` | 既定値・マージ・storage 連携 |
-| `src/background/service-worker.js` | タブ操作 |
-| `src/options/` | 設定画面 |
+| `src/background/service-worker.js` | タブ操作（拡張 API が要るアクション） |
+| `src/options/options.html` / `.css` / `.js` | 設定画面 |
+| `src/options/gesture-symbol.js` | ジェスチャ → 軌跡の座標（純粋関数） |
 
-不具合が出たときは、まず上の 3 つの純粋ロジックのどれかを疑う。
-いずれもユニットテストがあるので、再現するテストを 1 本足してから直す。
+不具合が出たときは、まず純粋ロジックの 3 つ（`recognizer.js` / `gesture-state.js` /
+`suppressor.js`）のどれかを疑う。判断はここに閉じており、いずれもユニットテストが
+あるので、再現するテストを 1 本足してから直す。
+
+ブラウザでしか確認できない挙動は `test/manual-checklist.md` が受け持つ。
 
 ウェブストアに提出する掲載文と権限の説明は `docs/store-listing.md` にまとめてある。
 プライバシーポリシーは `PRIVACY.md`。
+
+## ライセンス
+
+MIT License. 詳細は [LICENSE](LICENSE) を参照。
