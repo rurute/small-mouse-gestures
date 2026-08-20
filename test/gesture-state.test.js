@@ -155,11 +155,28 @@ test('reset は ARMED_RIGHT なら副作用なしで IDLE に戻す', () => {
   assert.equal(machine.state, STATE.IDLE);
 });
 
-test('reset 後の右ボタン離上ではメニューが抑止されない', () => {
+test('この文書で押下を見ていない右ボタンの離上はメニューを抑止する', () => {
+  // ロッカーで遷移した先では、押下を見ないまま離上だけが届く。
+  // 抑止フラグはページごとのインスタンスが持つため遷移をまたげず、
+  // これを抑止しないと遷移先でメニューが出てしまう。
+  const machine = createMachine({ startPx: 12 });
+  assert.equal(machine.state, STATE.IDLE);
+  assert.deepEqual(types(machine.handle(up(RIGHT, 0, 0))), ['suppressContextMenu']);
+});
+
+test('reset で IDLE に戻ったあとの右ボタン離上もメニューを抑止する', () => {
+  // 押していない場所にメニューが出る方が不自然なので、上と同じ扱いにする。
   const machine = createMachine({ startPx: 12 });
   machine.handle(down(RIGHT, 0, 0));
   machine.handle(down(LEFT, 0, 0));
   machine.handle({ type: 'reset' });
+  assert.deepEqual(types(machine.handle(up(RIGHT, 0, 0))), ['suppressContextMenu']);
+});
+
+test('左ボタン待機中の右ボタン離上は抑止しない', () => {
+  const machine = createMachine({ startPx: 12 });
+  machine.handle(down(LEFT, 0, 0));
+  assert.equal(machine.state, STATE.ARMED_LEFT);
   assert.deepEqual(machine.handle(up(RIGHT, 0, 0)), []);
 });
 

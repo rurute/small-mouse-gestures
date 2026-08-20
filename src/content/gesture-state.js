@@ -115,6 +115,15 @@ export function createMachine({ startPx = DEFAULT_START_PX } = {}) {
         // ページ本来の右クリックメニューを通す。
         return suppress ? [{ type: 'suppressContextMenu' }] : [];
       }
+
+      if (state === STATE.IDLE) {
+        // この文書では右ボタンの押下を見ていない。直前のページでロッカーが
+        // 実行されて遷移し、遷移先で離された場合がこれにあたる（抑止フラグは
+        // ページごとのインスタンスが持つため、遷移をまたげない）。
+        // 押していない場所にメニューが出るのは意図しない挙動なので抑止する。
+        return [{ type: 'suppressContextMenu' }];
+      }
+
       return [];
     }
 
