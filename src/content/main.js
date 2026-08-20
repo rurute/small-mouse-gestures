@@ -95,17 +95,27 @@ function onKeyDown(event) {
   );
 }
 
-function onReset() {
+function onReset(event) {
+  // 合成 blur / visibilitychange で状態機械をリセットされないようにする。
+  // これを許すと、ページ側が合成イベントを撒くだけでそのページ上の
+  // ジェスチャを無効化できてしまう（「戻る」を殺して閉じ込める手口になる）。
+  if (!event.isTrusted) return;
   applyEffects(machine.handle({ type: 'reset' }), null);
 }
 
 function onContextMenu(event) {
+  // 合成イベントで抑止フラグを消費されないようにする。consume() は無条件に
+  // フラグを消すため、これが無いとページ側が合成イベントを撒くだけで抑止を外せる。
+  if (!event.isTrusted) return;
   if (!contextMenuSuppressor.consume(performance.now())) return;
   event.preventDefault();
   event.stopPropagation();
 }
 
 function onClick(event) {
+  // 合成イベントで抑止フラグを消費されないようにする。これが無いと、ページ側が
+  // 合成クリックを撒くことでロッカー時のクリック抑止を外し、リンクを開かせられる。
+  if (!event.isTrusted) return;
   if (!clickSuppressor.consume(performance.now())) return;
   event.preventDefault();
   event.stopPropagation();
