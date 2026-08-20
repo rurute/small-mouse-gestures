@@ -1,4 +1,4 @@
-import { createMachine } from './gesture-state.js';
+import { createMachine, STATE } from './gesture-state.js';
 import { createStroke } from './recognizer.js';
 import { createSuppressor } from './suppressor.js';
 import { CONTENT_ACTIONS } from './actions-content.js';
@@ -23,10 +23,28 @@ let stroke = createStroke({ stepPx: settings.thresholds.stepPx });
 let pointerX = 0;
 let pointerY = 0;
 
+// ジェスチャ進行中に届いた設定。IDLE に戻った時点で反映する。
+let pendingThresholds = null;
+
+function rebuild(next) {
+  machine = createMachine({ startPx: next.thresholds.startPx });
+  stroke = createStroke({ stepPx: next.thresholds.stepPx });
+  pendingThresholds = null;
+}
+
+/**
+ * 設定を反映する。割当は即時に効かせるが、閾値の差し替えは
+ * 状態機械とストロークの作り直しを伴うため、ジェスチャ進行中は保留する。
+ * 進行中に作り直すと状態が取り残され、mouseup が握り潰されて
+ * アクションが実行されないまま右クリックメニューが不意に出る。
+ */
 function applySettings(next) {
   settings = next;
-  machine = createMachine({ startPx: settings.thresholds.startPx });
-  stroke = createStroke({ stepPx: settings.thresholds.stepPx });
+  if (machine.state === STATE.IDLE) {
+    rebuild(next);
+    return;
+  }
+  pendingThresholds = next;
 }
 
 loadSettings().then(applySettings);
@@ -118,6 +136,11 @@ function applyEffects(effects, event) {
       default:
         break;
     }
+  }
+
+  // ジェスチャが終わって IDLE に戻ったら、保留していた閾値の変更を反映する。
+  if (pendingThresholds && machine.state === STATE.IDLE) {
+    rebuild(pendingThresholds);
   }
 }
 
