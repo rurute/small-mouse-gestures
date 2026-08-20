@@ -22,5 +22,6 @@
       "resources": ["src/content/*.js", "src/shared/*.js"],
       "matches": ["<all_urls>"]
     }
-  ]
+  ],
+  "options_page": "src/options/options.html"
 }

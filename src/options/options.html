@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <title>Mouse Gestures 設定</title>
+    <link rel="stylesheet" href="options.css" />
+  </head>
+  <body>
+    <h1>Mouse Gestures 設定</h1>
+
+    <section>
+      <h2>ストロークジェスチャ</h2>
+      <table id="stroke-table">
+        <thead>
+          <tr><th>ジェスチャ</th><th>アクション</th><th></th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <div id="record-area">
+        <p>この枠の中で右ボタンをドラッグすると、新しいジェスチャを記録できます</p>
+        <p id="record-result" class="record-result"></p>
+      </div>
+      <button id="add-recorded" type="button" disabled>記録したジェスチャを追加</button>
+    </section>
+
+    <section>
+      <h2>ロッカージェスチャ</h2>
+      <table id="rocker-table">
+        <thead>
+          <tr><th>操作</th><th>アクション</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>閾値</h2>
+      <label>ジェスチャ開始までの移動距離 (px)
+        <input id="startPx" type="number" min="1" max="200" />
+      </label>
+      <label>方向を 1 つ記録する距離 (px)
+        <input id="stepPx" type="number" min="1" max="200" />
+      </label>
+    </section>
+
+    <section>
+      <h2>表示</h2>
+      <label><input id="trail" type="checkbox" /> 軌跡を表示する</label>
+      <label><input id="label" type="checkbox" /> アクション名を表示する</label>
+      <label>軌跡の色 <input id="color" type="color" /></label>
+      <label>軌跡の太さ <input id="width" type="number" min="1" max="20" /></label>
+    </section>
+
+    <div class="actions">
+      <button id="save" type="button">保存</button>
+      <button id="reset" type="button">既定に戻す</button>
+      <span id="status" role="status"></span>
+    </div>
+
+    <script type="module" src="options.js"></script>
+  </body>
+</html>
