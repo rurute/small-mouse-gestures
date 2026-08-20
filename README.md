@@ -88,3 +88,4 @@ ZIP を作らずに中断する。
 いずれもユニットテストがあるので、再現するテストを 1 本足してから直す。
 
 設計の経緯は `docs/superpowers/specs/2026-08-20-mouse-gestures-design.md` を参照。
+ウェブストアに提出する掲載文と権限の説明は `docs/store-listing.md` にまとめてある。
