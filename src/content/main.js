@@ -2,6 +2,7 @@ import { createMachine, STATE } from './gesture-state.js';
 import { createStroke } from './recognizer.js';
 import { createSuppressor } from './suppressor.js';
 import { CONTENT_ACTIONS } from './actions-content.js';
+import { createOverlay } from './overlay.js';
 import { getAction } from '../shared/actions.js';
 import { defaultSettings, loadSettings, subscribeSettings } from '../shared/settings.js';
 
@@ -18,6 +19,7 @@ const clickSuppressor = createSuppressor({ ttlMs: CLICK_TTL_MS });
 let settings = defaultSettings();
 let machine = createMachine({ startPx: settings.thresholds.startPx });
 let stroke = createStroke({ stepPx: settings.thresholds.stepPx });
+const overlay = createOverlay(settings.overlay);
 
 // ESC キー押下時に現在のポインタ位置を状態機械へ渡すために保持する。
 let pointerX = 0;
@@ -40,6 +42,7 @@ function rebuild(next) {
  */
 function applySettings(next) {
   settings = next;
+  overlay.update(settings.overlay);
   if (machine.state === STATE.IDLE) {
     rebuild(next);
     return;
@@ -113,15 +116,20 @@ function applyEffects(effects, event) {
       case 'gestureStart':
         stroke.reset();
         stroke.addPoint(effect.x, effect.y);
+        overlay.start(effect.x, effect.y);
         break;
       case 'gestureMove':
         stroke.addPoint(effect.x, effect.y);
+        overlay.addPoint(effect.x, effect.y);
+        overlay.setLabel(describeBinding(stroke.directions));
         break;
       case 'gestureEnd':
         runBinding(stroke.directions);
+        overlay.end();
         stroke.reset();
         break;
       case 'gestureCancel':
+        overlay.end();
         stroke.reset();
         break;
       case 'rocker':
@@ -165,4 +173,12 @@ function runBinding(key) {
   }
 
   console.debug(`[mouse-gestures] background へのディスパッチは未実装: ${action.id}`);
+}
+
+/** 認識中のジェスチャを「DR → タブを閉じる」の形で表す。 */
+function describeBinding(key) {
+  if (!key) return '';
+  const actionId = settings.bindings[key];
+  const action = actionId ? getAction(actionId) : null;
+  return action ? `${key} → ${action.label}` : `${key} → 未割当`;
 }
