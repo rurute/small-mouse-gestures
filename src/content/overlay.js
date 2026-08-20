@@ -17,11 +17,21 @@ export function createOverlay(options) {
   let points = [];
   let frameHandle = 0;
   let hideTimer = 0;
+  // XML 文書（.svg / .xml を直接開いたタブ）では createElement が
+  // HTMLElement を返さず style が無い。描画はあきらめ、ジェスチャ自体は動かす。
+  // canvas を null のままにすると毎回 ensureDom を再試行してしまうため、
+  // 一度あきらめたことをこのフラグで覚えておく。
+  let domUnavailable = false;
 
   function ensureDom() {
-    if (canvas) return;
+    if (canvas || domUnavailable) return;
 
-    canvas = document.createElement('canvas');
+    const element = document.createElement('canvas');
+    if (!element.style) {
+      domUnavailable = true;
+      return;
+    }
+    canvas = element;
     canvas.id = CANVAS_ID;
     Object.assign(canvas.style, {
       position: 'fixed',
@@ -58,6 +68,7 @@ export function createOverlay(options) {
   }
 
   function resize() {
+    if (!canvas || !context) return;
     const ratio = window.devicePixelRatio || 1;
     canvas.width = Math.floor(window.innerWidth * ratio);
     canvas.height = Math.floor(window.innerHeight * ratio);
