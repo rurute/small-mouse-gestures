@@ -4,3 +4,6 @@ node_modules/
 
 # アイコン制作用の作業ファイル（キャンバスの成果物は Artifact 側にある）
 .design/
+
+# 配布用パッケージの出力先
+dist/

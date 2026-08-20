@@ -55,6 +55,21 @@ npm test          # ユニットテスト（Node 18 以上、依存パッケー�
 
 リリース前に `test/manual-checklist.md` を通すこと。
 
+## 配布用パッケージ
+
+ウェブストアに提出する ZIP は次で作る。
+
+```bash
+python3 tools/package.py    # dist/small-mouse-gestures-<version>.zip
+```
+
+同梱するのは `manifest.json` と `icons/` と `src/` だけで、`docs/` や `test/` は入らない。
+同梱物は `tools/package.py` の `INCLUDE` に許可リストとして書いてある。ファイルを増やして
+配布物に含めたい場合は、ここも更新する（更新を忘れるとスクリプトが止まって気づける）。
+
+manifest の参照先が欠けている、同じバージョンの ZIP がすでにある、といった場合は
+ZIP を作らずに中断する。
+
 ## 構成
 
 | ファイル | 役割 |
