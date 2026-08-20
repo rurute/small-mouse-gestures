@@ -23,6 +23,7 @@ export function createStroke({ stepPx = DEFAULT_STEP_PX, maxLength = MAX_LENGTH 
   let lastX = null;
   let lastY = null;
   let directions = '';
+  let overflowed = false;
 
   return {
     addPoint(x, y) {
@@ -37,22 +38,29 @@ export function createStroke({ stepPx = DEFAULT_STEP_PX, maxLength = MAX_LENGTH 
 
       lastX = x;
       lastY = y;
-      if (directions.length >= maxLength) return;
+      if (overflowed) return;
 
       const direction = quantize(dx, dy);
-      if (direction !== directions[directions.length - 1]) {
-        directions += direction;
+      if (direction === directions[directions.length - 1]) return;
+
+      if (directions.length >= maxLength) {
+        // 最大長を超える軌跡は認識対象外にする。先頭 maxLength 文字だけを採用すると、
+        // 長い書きなぐりが短いジェスチャに近似マッチして誤爆する。
+        overflowed = true;
+        return;
       }
+      directions += direction;
     },
 
     get directions() {
-      return directions;
+      return overflowed ? '' : directions;
     },
 
     reset() {
       lastX = null;
       lastY = null;
       directions = '';
+      overflowed = false;
     },
   };
 }

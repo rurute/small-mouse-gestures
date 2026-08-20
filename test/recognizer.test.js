@@ -57,9 +57,26 @@ test('斜めのぶれを含む水平移動は R ひとつになる', () => {
   assert.equal(strokeOf([[0, 0], [20, 5], [40, -3], [60, 4]]), 'R');
 });
 
-test('方向列は最大長 4 で打ち切られる', () => {
-  const points = [[0, 0], [40, 0], [40, 40], [0, 40], [0, 0], [40, 0]];
+test('ちょうど最大長の方向列は認識される', () => {
+  const points = [[0, 0], [40, 0], [40, 40], [0, 40], [0, 0]];
   assert.equal(strokeOf(points), 'RDLU');
+});
+
+test('最大長を超えた軌跡は認識対象外になる（近似マッチさせない）', () => {
+  const points = [[0, 0], [40, 0], [40, 40], [0, 40], [0, 0], [40, 0]];
+  assert.equal(strokeOf(points), '');
+});
+
+test('reset で overflow 状態も解除される', () => {
+  const stroke = createStroke();
+  for (const [x, y] of [[0, 0], [40, 0], [40, 40], [0, 40], [0, 0], [40, 0]]) {
+    stroke.addPoint(x, y);
+  }
+  assert.equal(stroke.directions, '');
+  stroke.reset();
+  stroke.addPoint(0, 0);
+  stroke.addPoint(40, 0);
+  assert.equal(stroke.directions, 'R');
 });
 
 test('stepPx は上書きできる', () => {
