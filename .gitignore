@@ -11,3 +11,6 @@ dist/
 # ブラウザ自動操作の作業ファイル
 .playwright/
 .playwright-cli/
+
+# 設計・実装計画の作業ファイル（手元にのみ置く）
+docs/superpowers/
