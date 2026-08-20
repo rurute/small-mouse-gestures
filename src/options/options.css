@@ -8,6 +8,8 @@
   --card: #ffffff;
   --tile: #eef4fd;
   --border: #dfe6f0;
+  /* ボタンの枠。カードの境界線と同じ色だとタイルの上で沈むため一段濃くする。 */
+  --control-border: #c2cede;
   --fg: #1f2328;
   --muted: #57606a;
   --input-bg: #ffffff;
@@ -21,6 +23,7 @@
     --card: #151c24;
     --tile: #182230;
     --border: #242e3a;
+    --control-border: #3d4a5a;
     --fg: #e6e8ea;
     --muted: #9aa4b0;
     --input-bg: #0f151b;
@@ -153,7 +156,6 @@ body {
 }
 
 .tile-remove {
-  align-self: flex-start;
   flex-shrink: 0;
 }
 
@@ -238,7 +240,8 @@ body {
 }
 
 .field-label {
-  font-size: 12px;
+  font-size: 13px;
+  font-weight: 500;
   color: var(--muted);
 }
 
@@ -317,11 +320,14 @@ input[type="checkbox"] {
 
 .button-ghost {
   color: var(--muted);
-  background: transparent;
-  border-color: var(--border);
+  background: var(--card);
+  border-color: var(--control-border);
 }
 
-.button-ghost:hover { color: var(--fg); }
+.button-ghost:hover {
+  color: var(--fg);
+  border-color: var(--muted);
+}
 
 .button-small {
   padding: 4px 10px;
