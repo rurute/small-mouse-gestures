@@ -83,20 +83,38 @@ async function init() {
   document.getElementById('add-recorded').addEventListener('click', onAddRecorded);
 }
 
-function createActionSelect(key) {
+/**
+ * アクションのプルダウン。
+ *
+ * ロッカーは枠が固定でストロークのように削除できないため、「割り当てなし」を
+ * 選べるようにする（allowNone）。割り当てなしにすると拡張は一切手を出さず、
+ * 右ボタンを押しながらの左クリックはページ本来のクリックとして通る。
+ */
+function createActionSelect(key, { allowNone = false } = {}) {
   const select = document.createElement('select');
+
+  if (allowNone) {
+    const none = document.createElement('option');
+    none.value = '';
+    none.textContent = '割り当てなし';
+    select.append(none);
+  }
+
   for (const action of ACTIONS) {
     const option = document.createElement('option');
     option.value = action.id;
     option.textContent = action.label;
     select.append(option);
   }
-  // 未設定のキー（既定を消したロッカーなど）は先頭のアクションで埋める。
-  const current = settings.bindings[key] ?? ACTIONS[0].id;
+
+  const current = settings.bindings[key] ?? (allowNone ? '' : ACTIONS[0].id);
   select.value = current;
-  settings.bindings[key] = current;
+  // 割り当てなしを選べない枠だけ、未設定のときに既定で埋める。
+  if (!allowNone) settings.bindings[key] = current;
+
   select.addEventListener('change', () => {
-    settings.bindings[key] = select.value;
+    if (select.value === '') delete settings.bindings[key];
+    else settings.bindings[key] = select.value;
   });
   return select;
 }
@@ -148,7 +166,7 @@ function renderRockerList() {
     label.className = 'row-label';
     label.textContent = ROCKER_LABELS[key];
 
-    row.append(label, createActionSelect(key));
+    row.append(label, createActionSelect(key, { allowNone: true }));
     list.append(row);
   }
 }

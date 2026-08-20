@@ -24,6 +24,15 @@ function rightButtonHeld(event) {
 }
 
 /**
+ * このボタンに対応するロッカーにアクションが割り当てられているか。
+ * 割当の有無は設定側の情報なので、呼び出し側がイベントに載せて渡す。
+ * 未指定なら割当ありとみなす（配線漏れで機能が黙って死ぬより安全側）。
+ */
+function rockerAssigned(event) {
+  return event.rockerAssigned !== false;
+}
+
+/**
  * ストロークとロッカーを統合した状態機械。
  * タイマーを持たず DOM にも触れない。副作用は配列で返すだけで、
  * 実際の適用は呼び出し側が行う。
@@ -55,6 +64,12 @@ export function createMachine({ startPx = DEFAULT_START_PX } = {}) {
   function onMouseDown(event) {
     if (event.button === RIGHT_BUTTON) {
       if (state === STATE.ARMED_LEFT) {
+        if (!rockerAssigned(event)) {
+          // 割り当てが無いので手を出さない。通常の右クリックとして扱い、
+          // そのままストロークジェスチャの起点にする。
+          arm(STATE.ARMED_RIGHT, event.x, event.y);
+          return [];
+        }
         arm(STATE.ARMED_RIGHT, event.x, event.y);
         suppressMenuOnRelease = true;
         return [
@@ -73,6 +88,11 @@ export function createMachine({ startPx = DEFAULT_START_PX } = {}) {
       // 見ていないため IDLE になる。ここを取りこぼすと、続けての左クリックが
       // 素通りしてカーソル下のリンクを踏む。
       if (state === STATE.ARMED_RIGHT || state === STATE.GESTURING || rightButtonHeld(event)) {
+        if (!rockerAssigned(event)) {
+          // 割り当てが無いので手を出さない。preventDefault もクリック抑止もせず、
+          // ページ本来のクリックをそのまま通す。
+          return [];
+        }
         const effects = [];
         if (state === STATE.GESTURING) effects.push({ type: 'gestureCancel' });
         arm(STATE.ARMED_RIGHT, event.x, event.y);
@@ -157,7 +177,8 @@ export function createMachine({ startPx = DEFAULT_START_PX } = {}) {
       //    click がカーソル下のリンクを踏む。
       // 2. rocker:left のあと左ボタンを長く持つと、押下時に立てた抑止が
       //    TTL 切れになり、離上時の click が素通りする。
-      if (rightButtonHeld(event)) {
+      // 割り当てが無いロッカーには手を出さないので、抑止も張らない。
+      if (rightButtonHeld(event) && rockerAssigned(event)) {
         return [{ type: 'suppressClick' }];
       }
     }

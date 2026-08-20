@@ -54,6 +54,13 @@ window.addEventListener('keydown', onKeyDown, LISTENER_OPTIONS);
 window.addEventListener('blur', onReset, false);
 document.addEventListener('visibilitychange', onReset, true);
 
+/** そのボタンの押下が引き起こしうるロッカーのキー。 */
+function rockerKeyFor(button) {
+  if (button === 0) return 'rocker:left';
+  if (button === 2) return 'rocker:right';
+  return null;
+}
+
 function onMouseEvent(event) {
   // ページが dispatchEvent した合成イベントで拡張を操作されないようにする。
   if (!event.isTrusted) return;
@@ -65,6 +72,8 @@ function onMouseEvent(event) {
       button: event.button,
       // 押下を見ていない状況でも保持状態を判定できるよう、そのまま渡す。
       buttons: event.buttons,
+      // 割当が無いロッカーには手を出さないので、その判断材料を渡す。
+      rockerAssigned: Boolean(settings.bindings[rockerKeyFor(event.button)]),
       x: event.clientX,
       y: event.clientY,
     }),

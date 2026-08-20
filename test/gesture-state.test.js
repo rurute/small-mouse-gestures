@@ -210,12 +210,62 @@ test('rocker:left のあとの左ボタン離上でも click 抑止を張り直�
   assert.equal(machine.state, STATE.ARMED_RIGHT);
 });
 
+test('割り当てが無ければ左ボタン離上でも click を抑止しない', () => {
+  // 抑止すると、割り当てを外したのにリンクが開かないという状態になる。
+  const machine = createMachine({ startPx: 12 });
+  machine.handle(down(RIGHT, 0, 0));
+  const effects = machine.handle({
+    type: 'mouseup', button: LEFT, buttons: 2, rockerAssigned: false, x: 0, y: 0,
+  });
+  assert.deepEqual(effects, []);
+});
+
 test('右ボタンを押していない普通の左ボタン離上は抑止しない', () => {
   const machine = createMachine({ startPx: 12 });
   machine.handle({ type: 'mousedown', button: LEFT, buttons: 1, x: 0, y: 0 });
   assert.equal(machine.state, STATE.ARMED_LEFT);
   assert.deepEqual(machine.handle({ type: 'mouseup', button: LEFT, buttons: 0, x: 0, y: 0 }), []);
   assert.equal(machine.state, STATE.IDLE);
+});
+
+test('割り当てが無ければ rocker:left は発火せず、クリックも抑止しない', () => {
+  const machine = createMachine({ startPx: 12 });
+  machine.handle(down(RIGHT, 0, 0));
+  const effects = machine.handle({
+    type: 'mousedown', button: LEFT, buttons: 3, rockerAssigned: false, x: 0, y: 0,
+  });
+  assert.deepEqual(effects, []);
+  // ストロークの待機状態は保たれる（右ボタンはまだ押されている）
+  assert.equal(machine.state, STATE.ARMED_RIGHT);
+});
+
+test('割り当てが無ければ rocker:right も発火せず、通常の右クリックとして扱う', () => {
+  const machine = createMachine({ startPx: 12 });
+  machine.handle(down(LEFT, 0, 0));
+  assert.equal(machine.state, STATE.ARMED_LEFT);
+  const effects = machine.handle({
+    type: 'mousedown', button: RIGHT, buttons: 3, rockerAssigned: false, x: 0, y: 0,
+  });
+  assert.deepEqual(effects, []);
+  // そのままストロークの起点になる
+  assert.equal(machine.state, STATE.ARMED_RIGHT);
+});
+
+test('割り当てが無い rocker:right のあと、動かさず離せばメニューが出る', () => {
+  const machine = createMachine({ startPx: 12 });
+  machine.handle(down(LEFT, 0, 0));
+  machine.handle({
+    type: 'mousedown', button: RIGHT, buttons: 3, rockerAssigned: false, x: 0, y: 0,
+  });
+  // 抑止フラグが立っていないので、離上時に何も抑止しない
+  assert.deepEqual(machine.handle(up(RIGHT, 0, 0)), []);
+});
+
+test('rockerAssigned の指定が無ければ割当ありとみなす', () => {
+  const machine = createMachine({ startPx: 12 });
+  machine.handle(down(RIGHT, 0, 0));
+  const effects = machine.handle({ type: 'mousedown', button: LEFT, buttons: 3, x: 0, y: 0 });
+  assert.deepEqual(types(effects), ['rocker', 'preventDefault', 'suppressClick']);
 });
 
 test('左ボタン待機中の右ボタン離上は抑止しない', () => {
