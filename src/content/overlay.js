@@ -1,5 +1,5 @@
-const CANVAS_ID = 'mouse-gestures-overlay';
-const LABEL_ID = 'mouse-gestures-label';
+const CANVAS_ID = 'small-mouse-gestures-overlay';
+const LABEL_ID = 'small-mouse-gestures-label';
 const LABEL_LINGER_MS = 600;
 const ERROR_LINGER_MS = 1600;
 const MAX_Z_INDEX = '2147483647';

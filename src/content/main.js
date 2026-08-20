@@ -164,13 +164,13 @@ function runBinding(key) {
 
   const actionId = settings.bindings[key];
   if (!actionId) {
-    console.debug(`[mouse-gestures] 未割当のジェスチャ: ${key}`);
+    console.debug(`[small-mouse-gestures] 未割当のジェスチャ: ${key}`);
     return;
   }
 
   const action = getAction(actionId);
   if (!action) {
-    console.warn(`[mouse-gestures] 未知のアクション ID: ${actionId}`);
+    console.warn(`[small-mouse-gestures] 未知のアクション ID: ${actionId}`);
     return;
   }
 
@@ -197,7 +197,7 @@ async function sendToBackground(actionId, attempt = 0) {
       await sendToBackground(actionId, 1);
       return;
     }
-    console.warn('[mouse-gestures] アクションの実行に失敗しました', error);
+    console.warn('[small-mouse-gestures] アクションの実行に失敗しました', error);
     overlay.flashError(`実行に失敗しました: ${actionId}`);
   }
 }

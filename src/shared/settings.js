@@ -56,7 +56,7 @@ function sanitizeBindings(bindings) {
     if (ACTION_IDS.includes(actionId)) {
       result[key] = actionId;
     } else {
-      console.warn(`[mouse-gestures] 未知のアクション ID のため無視します: ${key} → ${actionId}`);
+      console.warn(`[small-mouse-gestures] 未知のアクション ID のため無視します: ${key} → ${actionId}`);
     }
   }
   return result;
@@ -95,7 +95,7 @@ export async function loadSettings() {
     const raw = await chrome.storage.sync.get(STORAGE_KEY);
     return mergeSettings(raw?.[STORAGE_KEY]);
   } catch (error) {
-    console.warn('[mouse-gestures] 設定の読み込みに失敗。既定値で動作します。', error);
+    console.warn('[small-mouse-gestures] 設定の読み込みに失敗。既定値で動作します。', error);
     return defaultSettings();
   }
 }

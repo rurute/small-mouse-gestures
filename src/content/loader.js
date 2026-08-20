@@ -3,5 +3,5 @@
 // そのためクラシックスクリプトから動的 import でモジュール本体を読み込む。
 // 対象ファイルは manifest.json の web_accessible_resources に列挙してある。
 import(chrome.runtime.getURL('src/content/main.js')).catch((error) => {
-  console.error('[mouse-gestures] モジュールの読み込みに失敗しました', error);
+  console.error('[small-mouse-gestures] モジュールの読み込みに失敗しました', error);
 });

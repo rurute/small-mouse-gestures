@@ -23,7 +23,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   runAction(message.actionId, sender.tab?.id)
     .then(() => sendResponse({ ok: true }))
     .catch((error) => {
-      console.warn('[mouse-gestures]', error);
+      console.warn('[small-mouse-gestures]', error);
       sendResponse({ ok: false, error: String(error?.message ?? error) });
     });
 

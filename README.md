@@ -1,4 +1,4 @@
-# Mouse Gestures
+# small mouse gestures
 
 自分用のマウスジェスチャ Chrome 拡張。ビルド工程を持たず、依存パッケージもゼロ。
 
