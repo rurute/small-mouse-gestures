@@ -6,56 +6,68 @@
     <link rel="stylesheet" href="options.css" />
   </head>
   <body>
-    <h1>small mouse gestures 設定</h1>
+    <div class="page">
+      <header class="page-header">
+        <div class="titles">
+          <h1>small mouse gestures</h1>
+          <p>設定</p>
+        </div>
+        <div class="header-actions">
+          <span id="status" role="status"></span>
+          <button id="reset" class="button button-ghost" type="button">既定に戻す</button>
+          <button id="save" class="button button-primary" type="button">保存</button>
+        </div>
+      </header>
 
-    <section>
-      <h2>ストロークジェスチャ</h2>
-      <table id="stroke-table">
-        <thead>
-          <tr><th>ジェスチャ</th><th>アクション</th><th></th></tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+      <section class="card">
+        <h2 class="card-title">ストロークジェスチャ</h2>
+        <div id="stroke-list" class="tile-grid"></div>
 
-      <div id="record-area">
-        <p>この枠の中で右ボタンをドラッグすると、新しいジェスチャを記録できます</p>
-        <p id="record-result" class="record-result"></p>
-      </div>
-      <button id="add-recorded" type="button" disabled>記録したジェスチャを追加</button>
-    </section>
+        <div id="record-area" class="record">
+          <p class="record-hint">この枠の中で右ボタンをドラッグすると、新しいジェスチャを記録できます</p>
+          <p id="record-result" class="record-result"></p>
+          <button id="add-recorded" class="button button-primary" type="button" disabled>
+            記録したジェスチャを追加
+          </button>
+        </div>
+      </section>
 
-    <section>
-      <h2>ロッカージェスチャ</h2>
-      <table id="rocker-table">
-        <thead>
-          <tr><th>操作</th><th>アクション</th></tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </section>
+      <section class="card">
+        <h2 class="card-title">ロッカージェスチャ</h2>
+        <div id="rocker-list" class="row-list"></div>
+      </section>
 
-    <section>
-      <h2>閾値</h2>
-      <label>ジェスチャ開始までの移動距離 (px)
-        <input id="startPx" type="number" min="1" max="200" />
-      </label>
-      <label>方向を 1 つ記録する距離 (px)
-        <input id="stepPx" type="number" min="1" max="200" />
-      </label>
-    </section>
+      <section class="card">
+        <h2 class="card-title">閾値</h2>
+        <div class="field-row">
+          <label class="field">
+            <span class="field-label">ジェスチャ開始までの移動距離 (px)</span>
+            <input id="startPx" type="number" min="1" max="200" />
+          </label>
+          <label class="field">
+            <span class="field-label">方向を 1 つ記録する距離 (px)</span>
+            <input id="stepPx" type="number" min="1" max="200" />
+          </label>
+        </div>
+      </section>
 
-    <section>
-      <h2>表示</h2>
-      <label><input id="trail" type="checkbox" /> 軌跡を表示する</label>
-      <label><input id="label" type="checkbox" /> アクション名を表示する</label>
-      <label>軌跡の色 <input id="color" type="color" /></label>
-      <label>軌跡の太さ <input id="width" type="number" min="1" max="20" /></label>
-    </section>
-
-    <div class="actions">
-      <button id="save" type="button">保存</button>
-      <button id="reset" type="button">既定に戻す</button>
-      <span id="status" role="status"></span>
+      <section class="card">
+        <h2 class="card-title">表示</h2>
+        <div class="field-row">
+          <div class="checks">
+            <label class="check"><input id="trail" type="checkbox" /><span>軌跡を表示する</span></label>
+            <label class="check"><input id="label" type="checkbox" /><span>アクション名を表示する</span></label>
+          </div>
+          <label class="field">
+            <span class="field-label">軌跡の色</span>
+            <input id="color" type="color" />
+          </label>
+          <label class="field">
+            <span class="field-label">軌跡の太さ</span>
+            <input id="width" type="number" min="1" max="20" />
+          </label>
+        </div>
+      </section>
     </div>
 
     <script type="module" src="options.js"></script>

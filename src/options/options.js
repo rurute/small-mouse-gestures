@@ -11,6 +11,7 @@ import {
 } from '../shared/settings.js';
 import { createStroke } from '../content/recognizer.js';
 import { createSuppressor } from '../content/suppressor.js';
+import { describeGesture } from './gesture-symbol.js';
 
 const ROCKER_KEYS = ['rocker:left', 'rocker:right'];
 const ROCKER_LABELS = {
@@ -33,6 +34,42 @@ document.addEventListener(
   },
   true,
 );
+
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+function createPath(points) {
+  const path = document.createElementNS(SVG_NS, 'path');
+  const d = points.map(([x, y], index) => `${index === 0 ? 'M' : 'L'}${x} ${y}`).join(' ');
+  path.setAttribute('d', d);
+  return path;
+}
+
+/**
+ * ジェスチャを軌跡の形で描く。描けないキー（ロッカーなど）には null を返す。
+ * 線の色は currentColor で親の CSS に委ねる。
+ */
+function createGlyph(key, size) {
+  const shape = describeGesture(key);
+  if (!shape) return null;
+
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  svg.setAttribute('width', String(size));
+  svg.setAttribute('height', String(size));
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('aria-hidden', 'true');
+  svg.classList.add('glyph');
+
+  const group = document.createElementNS(SVG_NS, 'g');
+  group.setAttribute('fill', 'none');
+  group.setAttribute('stroke', 'currentColor');
+  group.setAttribute('stroke-width', '2.2');
+  group.setAttribute('stroke-linecap', 'round');
+  group.setAttribute('stroke-linejoin', 'round');
+  group.append(createPath(shape.points), createPath(shape.head));
+
+  svg.append(group);
+  return svg;
+}
 
 let settings = defaultSettings();
 let recorded = '';
@@ -66,56 +103,61 @@ function createActionSelect(key) {
   return select;
 }
 
-function renderStrokeTable() {
-  const body = document.querySelector('#stroke-table tbody');
-  body.replaceChildren();
+function renderStrokeList() {
+  const list = document.getElementById('stroke-list');
+  list.replaceChildren();
 
   const keys = Object.keys(settings.bindings).filter((key) => !key.startsWith('rocker:'));
   for (const key of keys) {
-    const row = document.createElement('tr');
+    const tile = document.createElement('div');
+    tile.className = 'tile';
 
-    const keyCell = document.createElement('td');
-    keyCell.textContent = key;
+    const glyphBox = document.createElement('div');
+    glyphBox.className = 'tile-glyph';
+    const glyph = createGlyph(key, 30);
+    if (glyph) glyphBox.append(glyph);
 
-    const actionCell = document.createElement('td');
-    actionCell.append(createActionSelect(key));
+    const body = document.createElement('div');
+    body.className = 'tile-body';
+    const keyLabel = document.createElement('code');
+    keyLabel.className = 'tile-key';
+    keyLabel.textContent = key;
+    body.append(keyLabel, createActionSelect(key));
 
-    const removeCell = document.createElement('td');
     const removeButton = document.createElement('button');
     removeButton.type = 'button';
+    removeButton.className = 'button button-ghost button-small tile-remove';
     removeButton.textContent = '削除';
     removeButton.addEventListener('click', () => {
       delete settings.bindings[key];
       render();
     });
-    removeCell.append(removeButton);
 
-    row.append(keyCell, actionCell, removeCell);
-    body.append(row);
+    tile.append(glyphBox, body, removeButton);
+    list.append(tile);
   }
 }
 
-function renderRockerTable() {
-  const body = document.querySelector('#rocker-table tbody');
-  body.replaceChildren();
+function renderRockerList() {
+  const list = document.getElementById('rocker-list');
+  list.replaceChildren();
 
   for (const key of ROCKER_KEYS) {
-    const row = document.createElement('tr');
+    const row = document.createElement('div');
+    row.className = 'row';
 
-    const keyCell = document.createElement('td');
-    keyCell.textContent = ROCKER_LABELS[key];
+    const label = document.createElement('div');
+    label.className = 'row-label';
+    label.textContent = ROCKER_LABELS[key];
 
-    const actionCell = document.createElement('td');
-    actionCell.append(createActionSelect(key));
-
-    row.append(keyCell, actionCell);
-    body.append(row);
+    row.append(label, createActionSelect(key));
+    list.append(row);
   }
 }
 
 function render() {
-  renderStrokeTable();
-  renderRockerTable();
+  renderStrokeList();
+  renderRockerList();
   document.getElementById('startPx').value = settings.thresholds.startPx;
   document.getElementById('stepPx').value = settings.thresholds.stepPx;
   document.getElementById('trail').checked = settings.overlay.trail;
@@ -124,9 +166,30 @@ function render() {
   document.getElementById('width').value = settings.overlay.width;
 }
 
+/**
+ * 記録枠の結果表示。ジェスチャとして描けるものは軌跡と方向文字列で見せ、
+ * 案内文やエラーは注記として添える。
+ */
+function setRecordResult(gestureKey, message) {
+  const result = document.getElementById('record-result');
+  result.replaceChildren();
+
+  const glyph = createGlyph(gestureKey, 34);
+  if (glyph) {
+    const code = document.createElement('code');
+    code.textContent = gestureKey;
+    result.append(glyph, code);
+  }
+
+  if (message) {
+    const note = document.createElement('span');
+    note.textContent = message;
+    result.append(note);
+  }
+}
+
 function wireRecorder() {
   const area = document.getElementById('record-area');
-  const result = document.getElementById('record-result');
   const addButton = document.getElementById('add-recorded');
   let stroke = null;
 
@@ -135,7 +198,7 @@ function wireRecorder() {
   function onMove(event) {
     if (!stroke) return;
     stroke.addPoint(event.clientX, event.clientY);
-    result.textContent = stroke.directions || '記録中…';
+    setRecordResult(stroke.directions, stroke.directions ? '' : '記録中…');
   }
 
   function onUp(event) {
@@ -148,15 +211,15 @@ function wireRecorder() {
     contextMenuSuppressor.arm(performance.now());
 
     if (!recorded) {
-      result.textContent = '認識できませんでした。もう少し大きく動かしてください。';
+      setRecordResult('', '認識できませんでした。もう少し大きく動かしてください。');
       return;
     }
     if (settings.bindings[recorded]) {
-      result.textContent = `${recorded}（すでに登録されています）`;
+      setRecordResult(recorded, '（すでに登録されています）');
       recorded = '';
       return;
     }
-    result.textContent = recorded;
+    setRecordResult(recorded, '');
     addButton.disabled = false;
   }
 
@@ -167,7 +230,7 @@ function wireRecorder() {
     stroke = createStroke({ stepPx });
     stroke.addPoint(event.clientX, event.clientY);
     recorded = '';
-    result.textContent = '記録中…';
+    setRecordResult('', '記録中…');
     addButton.disabled = true;
     document.addEventListener('mousemove', onMove, true);
     document.addEventListener('mouseup', onUp, true);
@@ -178,7 +241,7 @@ function onAddRecorded() {
   if (!recorded || settings.bindings[recorded]) return;
   settings.bindings[recorded] = ACTIONS[0].id;
   recorded = '';
-  document.getElementById('record-result').textContent = '';
+  setRecordResult('', '');
   document.getElementById('add-recorded').disabled = true;
   render();
 }
