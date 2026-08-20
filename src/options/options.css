@@ -213,6 +213,13 @@ body {
 
 .row-label {
   font-size: 13px;
+  flex-grow: 1;
+  min-width: 0;
+}
+
+/* 横並びの行では、プルダウンは中身なりの幅にとどめて見出しを潰さない。 */
+.row select {
+  flex-shrink: 0;
 }
 
 /* ---------------------------------------------------------------- 入力欄 */
@@ -260,7 +267,10 @@ select {
 
 input[type="number"] { width: 104px; }
 
-select { min-width: 170px; width: 100%; }
+select { min-width: 170px; }
+
+/* タイルは縦積みなので、プルダウンをタイル幅いっぱいに広げる。 */
+.tile-body select { width: 100%; }
 
 input[type="color"] {
   width: 44px;
