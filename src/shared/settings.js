@@ -14,12 +14,9 @@ export const DEFAULTS = Object.freeze({
     'rocker:left': 'back',
     'rocker:right': 'forward',
   }),
-  thresholds: Object.freeze({ startPx: 12, stepPx: 16 }),
   overlay: Object.freeze({ trail: true, label: true, color: '#4a9eff', width: 3 }),
 });
 
-export const PX_MIN = 1;
-export const PX_MAX = 200;
 export const WIDTH_MIN = 1;
 export const WIDTH_MAX = 20;
 
@@ -69,17 +66,12 @@ function sanitizeBindings(bindings) {
 export function mergeSettings(stored) {
   if (!isPlainObject(stored)) return defaultSettings();
 
-  const thresholds = isPlainObject(stored.thresholds) ? stored.thresholds : {};
   const overlay = isPlainObject(stored.overlay) ? stored.overlay : {};
 
   return {
     ...structuredClone(stored),
     version: DEFAULTS.version,
     bindings: sanitizeBindings(stored.bindings),
-    thresholds: {
-      startPx: pickInt(thresholds.startPx, PX_MIN, PX_MAX, DEFAULTS.thresholds.startPx),
-      stepPx: pickInt(thresholds.stepPx, PX_MIN, PX_MAX, DEFAULTS.thresholds.stepPx),
-    },
     overlay: {
       trail: pickBoolean(overlay.trail, DEFAULTS.overlay.trail),
       label: pickBoolean(overlay.label, DEFAULTS.overlay.label),

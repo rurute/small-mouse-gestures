@@ -13,7 +13,6 @@ test('既定のバインディングは spec のとおり', () => {
     'rocker:left': 'back',
     'rocker:right': 'forward',
   });
-  assert.deepEqual(DEFAULTS.thresholds, { startPx: 12, stepPx: 16 });
   assert.deepEqual(DEFAULTS.overlay, { trail: true, label: true, color: '#4a9eff', width: 3 });
 });
 
@@ -35,7 +34,6 @@ test('保存値が無い場合は既定値を返す', () => {
 test('欠損したセクションは既定値で補完される', () => {
   const merged = mergeSettings({ bindings: { L: 'forward' } });
   assert.deepEqual(merged.bindings, { L: 'forward' });
-  assert.deepEqual(merged.thresholds, DEFAULTS.thresholds);
   assert.deepEqual(merged.overlay, DEFAULTS.overlay);
 });
 
@@ -53,21 +51,6 @@ test('空のバインディングは尊重される（既定値で上書きし�
   assert.deepEqual(mergeSettings({ bindings: {} }).bindings, {});
 });
 
-test('不正な閾値は既定値に置き換えられる', () => {
-  const merged = mergeSettings({ thresholds: { startPx: 'abc', stepPx: -5 } });
-  assert.deepEqual(merged.thresholds, DEFAULTS.thresholds);
-});
-
-test('範囲外の閾値は既定値に置き換えられる', () => {
-  const merged = mergeSettings({ thresholds: { startPx: 0, stepPx: 9999 } });
-  assert.deepEqual(merged.thresholds, DEFAULTS.thresholds);
-});
-
-test('妥当な閾値はそのまま採用される', () => {
-  const merged = mergeSettings({ thresholds: { startPx: 20, stepPx: 30 } });
-  assert.deepEqual(merged.thresholds, { startPx: 20, stepPx: 30 });
-});
-
 test('overlay の各項目が型ごとに検証される', () => {
   const merged = mergeSettings({
     overlay: { trail: false, label: 'はい', color: 123, width: 8 },
@@ -76,6 +59,15 @@ test('overlay の各項目が型ごとに検証される', () => {
   assert.equal(merged.overlay.label, DEFAULTS.overlay.label);
   assert.equal(merged.overlay.color, DEFAULTS.overlay.color);
   assert.equal(merged.overlay.width, 8);
+});
+
+test('認識のしきい値は設定として持たない（コードの定数に固定されている）', () => {
+  assert.equal(DEFAULTS.thresholds, undefined);
+  // 旧バージョンの保存値に thresholds が残っていても、前方互換の規則で
+  // そのまま保持されるだけで、設定として解釈されることはない。
+  const merged = mergeSettings({ thresholds: { startPx: 99 } });
+  assert.deepEqual(merged.thresholds, { startPx: 99 });
+  assert.deepEqual(Object.keys(merged).sort(), ['bindings', 'overlay', 'thresholds', 'version']);
 });
 
 test('version は常に現行の値になる', () => {

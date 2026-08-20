@@ -1,4 +1,4 @@
-import { createMachine, STATE } from './gesture-state.js';
+import { createMachine } from './gesture-state.js';
 import { createStroke } from './recognizer.js';
 import { createSuppressor } from './suppressor.js';
 import { CONTENT_ACTIONS } from './actions-content.js';
@@ -17,37 +17,21 @@ const clickSuppressor = createSuppressor({ ttlMs: CLICK_TTL_MS });
 // storage の読み込みは非同期なので、完了するまでは既定値で動作させる。
 // これによりページを開いた直後のジェスチャも取りこぼさない。
 let settings = defaultSettings();
-let machine = createMachine({ startPx: settings.thresholds.startPx });
-let stroke = createStroke({ stepPx: settings.thresholds.stepPx });
+
+// 認識のしきい値はコードの定数（gesture-state.js / recognizer.js）に固定されており
+// 実行中に変わらない。そのため状態機械とストロークは一度だけ作ればよい。
+const machine = createMachine();
+const stroke = createStroke();
 const overlay = createOverlay(settings.overlay);
 
 // ESC キー押下時に現在のポインタ位置を状態機械へ渡すために保持する。
 let pointerX = 0;
 let pointerY = 0;
 
-// ジェスチャ進行中に届いた設定。IDLE に戻った時点で反映する。
-let pendingThresholds = null;
-
-function rebuild(next) {
-  machine = createMachine({ startPx: next.thresholds.startPx });
-  stroke = createStroke({ stepPx: next.thresholds.stepPx });
-  pendingThresholds = null;
-}
-
-/**
- * 設定を反映する。割当は即時に効かせるが、閾値の差し替えは
- * 状態機械とストロークの作り直しを伴うため、ジェスチャ進行中は保留する。
- * 進行中に作り直すと状態が取り残され、mouseup が握り潰されて
- * アクションが実行されないまま右クリックメニューが不意に出る。
- */
+/** 設定を反映する。状態機械を作り直さないので、ジェスチャ進行中でも安全。 */
 function applySettings(next) {
   settings = next;
   overlay.update(settings.overlay);
-  if (machine.state === STATE.IDLE) {
-    rebuild(next);
-    return;
-  }
-  pendingThresholds = next;
 }
 
 loadSettings().then(applySettings);
@@ -161,11 +145,6 @@ function applyEffects(effects, event) {
       default:
         break;
     }
-  }
-
-  // ジェスチャが終わって IDLE に戻ったら、保留していた閾値の変更を反映する。
-  if (pendingThresholds && machine.state === STATE.IDLE) {
-    rebuild(pendingThresholds);
   }
 }
 

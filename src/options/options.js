@@ -1,8 +1,6 @@
 import { ACTIONS } from '../shared/actions.js';
 import {
   DEFAULTS,
-  PX_MIN,
-  PX_MAX,
   WIDTH_MIN,
   WIDTH_MAX,
   defaultSettings,
@@ -158,8 +156,6 @@ function renderRockerList() {
 function render() {
   renderStrokeList();
   renderRockerList();
-  document.getElementById('startPx').value = settings.thresholds.startPx;
-  document.getElementById('stepPx').value = settings.thresholds.stepPx;
   document.getElementById('trail').checked = settings.overlay.trail;
   document.getElementById('label').checked = settings.overlay.label;
   document.getElementById('color').value = settings.overlay.color;
@@ -226,8 +222,7 @@ function wireRecorder() {
   area.addEventListener('mousedown', (event) => {
     if (event.button !== RIGHT_BUTTON) return;
     event.preventDefault();
-    const stepPx = Number(document.getElementById('stepPx').value) || settings.thresholds.stepPx;
-    stroke = createStroke({ stepPx });
+    stroke = createStroke();
     stroke.addPoint(event.clientX, event.clientY);
     recorded = '';
     setRecordResult('', '記録中…');
@@ -257,14 +252,6 @@ function pickInRange(value, min, max, fallback) {
 }
 
 function readForm() {
-  settings.thresholds.startPx = pickInRange(
-    Number(document.getElementById('startPx').value),
-    PX_MIN, PX_MAX, DEFAULTS.thresholds.startPx,
-  );
-  settings.thresholds.stepPx = pickInRange(
-    Number(document.getElementById('stepPx').value),
-    PX_MIN, PX_MAX, DEFAULTS.thresholds.stepPx,
-  );
   settings.overlay.trail = document.getElementById('trail').checked;
   settings.overlay.label = document.getElementById('label').checked;
   settings.overlay.color = document.getElementById('color').value;
