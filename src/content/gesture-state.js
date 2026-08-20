@@ -11,6 +11,18 @@ export const DEFAULT_START_PX = 12;
 const LEFT_BUTTON = 0;
 const RIGHT_BUTTON = 2;
 
+/** event.buttons のビットマスク（押されているボタンの集合を表す）。 */
+const RIGHT_BUTTON_MASK = 2;
+
+/**
+ * そのイベントの時点で右ボタンが押されているか。
+ * button は「今変化したボタン」だが buttons は「今押されているボタン」なので、
+ * 押下そのものを見ていなくても保持状態を判定できる。
+ */
+function rightButtonHeld(event) {
+  return ((event.buttons ?? 0) & RIGHT_BUTTON_MASK) !== 0;
+}
+
 /**
  * ストロークとロッカーを統合した状態機械。
  * タイマーを持たず DOM にも触れない。副作用は配列で返すだけで、
@@ -56,7 +68,11 @@ export function createMachine({ startPx = DEFAULT_START_PX } = {}) {
     }
 
     if (event.button === LEFT_BUTTON) {
-      if (state === STATE.ARMED_RIGHT || state === STATE.GESTURING) {
+      // 状態が IDLE でも、右ボタンが物理的に押されていればロッカーとして扱う。
+      // ロッカーでページを遷移した直後は、遷移先のインスタンスが右ボタンの押下を
+      // 見ていないため IDLE になる。ここを取りこぼすと、続けての左クリックが
+      // 素通りしてカーソル下のリンクを踏む。
+      if (state === STATE.ARMED_RIGHT || state === STATE.GESTURING || rightButtonHeld(event)) {
         const effects = [];
         if (state === STATE.GESTURING) effects.push({ type: 'gestureCancel' });
         arm(STATE.ARMED_RIGHT, event.x, event.y);

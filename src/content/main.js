@@ -63,6 +63,8 @@ function onMouseEvent(event) {
     machine.handle({
       type: event.type,
       button: event.button,
+      // 押下を見ていない状況でも保持状態を判定できるよう、そのまま渡す。
+      buttons: event.buttons,
       x: event.clientX,
       y: event.clientY,
     }),

@@ -173,6 +173,23 @@ test('reset で IDLE に戻ったあとの右ボタン離上もメニューを�
   assert.deepEqual(types(machine.handle(up(RIGHT, 0, 0))), ['suppressContextMenu']);
 });
 
+test('押下を見ていなくても右ボタンが押されていれば rocker:left になる', () => {
+  // ロッカーで遷移した直後の状態。遷移先は右ボタンの押下を見ていない。
+  const machine = createMachine({ startPx: 12 });
+  assert.equal(machine.state, STATE.IDLE);
+  const effects = machine.handle({ type: 'mousedown', button: LEFT, buttons: 3, x: 0, y: 0 });
+  assert.deepEqual(types(effects), ['rocker', 'preventDefault', 'suppressClick']);
+  assert.equal(effects[0].side, 'left');
+  assert.equal(machine.state, STATE.ARMED_RIGHT);
+});
+
+test('右ボタンが押されていない左クリックはロッカーにならない', () => {
+  const machine = createMachine({ startPx: 12 });
+  const effects = machine.handle({ type: 'mousedown', button: LEFT, buttons: 1, x: 0, y: 0 });
+  assert.deepEqual(effects, []);
+  assert.equal(machine.state, STATE.ARMED_LEFT);
+});
+
 test('左ボタン待機中の右ボタン離上は抑止しない', () => {
   const machine = createMachine({ startPx: 12 });
   machine.handle(down(LEFT, 0, 0));
