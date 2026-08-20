@@ -1,3 +1,6 @@
 node_modules/
 *.zip
 .DS_Store
+
+# アイコン制作用の作業ファイル（キャンバスの成果物は Artifact 側にある）
+.design/
