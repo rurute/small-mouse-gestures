@@ -55,7 +55,7 @@ export function createMachine({ startPx = DEFAULT_START_PX } = {}) {
       if (state === STATE.ARMED_RIGHT || state === STATE.GESTURING) {
         const effects = [];
         if (state === STATE.GESTURING) effects.push({ type: 'gestureCancel' });
-        state = STATE.ARMED_RIGHT;
+        arm(STATE.ARMED_RIGHT, event.x, event.y);
         suppressMenuOnRelease = true;
         effects.push(
           { type: 'rocker', side: 'left' },

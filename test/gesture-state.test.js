@@ -163,6 +163,20 @@ test('reset 後の右ボタン離上ではメニューが抑止されない', ()
   assert.deepEqual(machine.handle(up(RIGHT, 0, 0)), []);
 });
 
+test('rocker:left でストロークをキャンセルした後、原点が現在位置に更新される', () => {
+  const machine = createMachine({ startPx: 12 });
+  machine.handle(down(RIGHT, 0, 0));
+  machine.handle(move(20, 0));
+  machine.handle(down(LEFT, 20, 0));
+  // 原点が (20,0) に更新されているので、1px の移動では閾値を超えない
+  assert.deepEqual(machine.handle(move(21, 0)), []);
+  assert.equal(machine.state, STATE.ARMED_RIGHT);
+  // 閾値を超えれば、古い原点 (0,0) ではなくロッカー位置 (20,0) から始まる
+  const effects = machine.handle(move(40, 0));
+  assert.deepEqual(types(effects), ['gestureStart', 'gestureMove', 'preventDefault']);
+  assert.deepEqual(effects[0], { type: 'gestureStart', x: 20, y: 0 });
+});
+
 test('中ボタンは無視される', () => {
   const machine = createMachine();
   assert.deepEqual(machine.handle(down(MIDDLE, 0, 0)), []);
