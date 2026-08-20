@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "Mouse Gestures",
+  "version": "0.1.0",
+  "description": "自分用のマウスジェスチャ拡張",
+  "permissions": ["storage"],
+  "host_permissions": ["<all_urls>"],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["src/content/loader.js"],
+      "run_at": "document_start",
+      "all_frames": false
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["src/content/*.js", "src/shared/*.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
