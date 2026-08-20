@@ -119,7 +119,7 @@ test('左ボタン押下中の右クリックで rocker:right が発火する', 
   machine.handle(down(LEFT, 0, 0));
   assert.equal(machine.state, STATE.ARMED_LEFT);
   const effects = machine.handle(down(RIGHT, 0, 0));
-  assert.deepEqual(types(effects), ['rocker', 'preventDefault']);
+  assert.deepEqual(types(effects), ['rocker', 'preventDefault', 'suppressClick']);
   assert.equal(effects[0].side, 'right');
   assert.deepEqual(types(machine.handle(up(RIGHT, 0, 0))), ['suppressContextMenu']);
 });

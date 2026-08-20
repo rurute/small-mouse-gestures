@@ -45,7 +45,11 @@ export function createMachine({ startPx = DEFAULT_START_PX } = {}) {
       if (state === STATE.ARMED_LEFT) {
         arm(STATE.ARMED_RIGHT, event.x, event.y);
         suppressMenuOnRelease = true;
-        return [{ type: 'rocker', side: 'right' }, { type: 'preventDefault' }];
+        return [
+          { type: 'rocker', side: 'right' },
+          { type: 'preventDefault' },
+          { type: 'suppressClick' },
+        ];
       }
       if (state === STATE.IDLE) arm(STATE.ARMED_RIGHT, event.x, event.y);
       return [];
