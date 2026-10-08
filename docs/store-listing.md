@@ -119,7 +119,7 @@ Chrome 自身の仕組みによってユーザーの Google アカウントを�
 行われるかを事前に限定できないため、すべてのページにコンテンツスクリプトを挿入し、
 マウスイベントを監視する必要があります。
 
-取得するのはマウスのボタン状態と座標のみです。ページの内容、URL、タイトル、
+取得するのはマウスのボタン状態と座標（および Esc キーの押下）のみです。ページの内容、URL、タイトル、
 閲覧履歴の読み取りは一切行いません。実際、この拡張機能は tabs 権限を要求しておらず、
 タブの URL やタイトルにアクセスする手段を持ちません。取得した座標は端末内での
 方向判定にのみ使用し、保存も送信もしません。
@@ -164,6 +164,39 @@ python3 tools/package.py
 2. `options-light.png` — 設定画面（ライト）
 3. `options-dark.png` — 設定画面（ダーク）
 
+いずれも Windows で撮影したもの（設定画面に Windows 以外向けの注意書きは出ていない）。
+
+## プロモーション画像
+
+| 種類 | ファイル | サイズ | 要否 |
+|---|---|---|---|
+| ストアアイコン | `icons/icon128.png` | 128×128 | 必須 |
+| 小さいプロモーションタイル | `docs/screenshots/promo-small.png` | 440×280 | 必須 |
+| マーキー プロモーションタイル | なし | 1400×560 | 任意（作らない） |
+| プロモーション動画 | なし | YouTube URL | 任意（作らない） |
+
+小さいタイルにも「Windows 版 Chrome 専用」を入れてある。検索結果やカテゴリ一覧で
+目に入る位置なので、Mac の利用者が誤ってインストールするのを減らせる。
+
+## テスト手順（Test instructions タブ）
+
+ログインや有料アカウントは不要なので、本来は空欄でよい。ただし審査担当者が
+Windows 以外で試すと何も起きないため、念のため次を記入する。
+
+```
+This extension works only on Chrome for Windows. On macOS, Linux and ChromeOS it is
+intentionally disabled (no content script logic runs and right-click behaves as usual),
+because Chrome on those platforms opens the context menu on right-button press, which
+makes mouse gestures impossible to combine with the native context menu.
+
+To test on Windows:
+1. Open any web page (e.g. https://en.wikipedia.org/) and follow a link to create history.
+2. Hold the right mouse button and drag left -> the browser goes back.
+3. Hold the right mouse button and drag down, then right -> the current tab closes.
+4. Hold the right mouse button and drag down, then left -> the closed tab is restored.
+No login or account is required.
+```
+
 ## プライバシーポリシーの URL
 
 提出時に入力する URL。リポジトリを public にすると有効になる。
@@ -172,7 +205,15 @@ python3 tools/package.py
 https://github.com/rurute/small-mouse-gestures/blob/main/PRIVACY.md
 ```
 
+## 配布
+
+- 公開範囲: 一般公開
+- 地域: すべての地域
+- 価格: 無料
+
 ## 提出前に済ませておくこと
 
 - 開発者登録（$5、初回のみ）
-- リポジトリを public に切り替える（上記 URL を有効にするため）
+- リポジトリを public に切り替える（上記 URL を有効にするため）— 済
+- Windows と macOS で `test/manual-checklist.md` を通す
+- `python3 tools/package.py` で ZIP を作る
