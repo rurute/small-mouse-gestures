@@ -10,6 +10,7 @@ import {
 import { createStroke } from '../content/recognizer.js';
 import { createSuppressor } from '../content/suppressor.js';
 import { describeGesture } from './gesture-symbol.js';
+import { isWindows } from '../shared/platform.js';
 
 const ROCKER_KEYS = ['rocker:left', 'rocker:right'];
 const ROCKER_LABELS = {
@@ -77,7 +78,11 @@ init();
 async function init() {
   settings = await loadSettings();
   render();
-  wireRecorder();
+  if (isWindows(navigator)) {
+    wireRecorder();
+  } else {
+    disableRecorder();
+  }
   document.getElementById('save').addEventListener('click', onSave);
   document.getElementById('reset').addEventListener('click', onReset);
   document.getElementById('add-recorded').addEventListener('click', onAddRecorded);
@@ -248,6 +253,17 @@ function wireRecorder() {
     document.addEventListener('mousemove', onMove, true);
     document.addEventListener('mouseup', onUp, true);
   });
+}
+
+/**
+ * Windows 以外では記録枠を使えなくする。右ボタンの押下時点でメニューが開くため、
+ * 記録中の軌跡がメニューに遮られる。設定の編集自体は他の端末と共有できるので残す。
+ */
+function disableRecorder() {
+  document.getElementById('platform-notice').hidden = false;
+  document.getElementById('record-area').classList.add('record-disabled');
+  document.querySelector('#record-area .record-hint').textContent =
+    'ジェスチャの記録は Windows 版 Chrome でのみ使えます';
 }
 
 function onAddRecorded() {

@@ -41,8 +41,13 @@
 
 ## 対象プラットフォーム
 
-Windows 版 Chrome。`contextmenu` イベントの発火タイミングが OS で異なるため、
-macOS / Linux ではコンテキストメニューの抑止が正しく働かない。
+Windows 版 Chrome のみ。macOS / Linux / ChromeOS では拡張を無効にしており、
+ジェスチャは動かず、右クリックはブラウザ本来の挙動のままになる。
+
+Windows の Chrome は `contextmenu` を右ボタンの**離上時**に発火するので、
+ドラッグしたかどうかを見てからメニューを抑止できる。他の OS では**押下時**に
+発火するため、ドラッグするかどうかが分かる前にメニューが開いてしまい、
+ジェスチャと両立できない。判定は `src/shared/platform.js` にある。
 
 ## 開発
 
@@ -83,6 +88,7 @@ ZIP を作らずに中断する。
 | `src/content/actions-content.js` | ページ内で完結するアクションの実装 |
 | `src/shared/actions.js` | アクション定義の唯一の定義元 |
 | `src/shared/settings.js` | 既定値・マージ・storage 連携 |
+| `src/shared/platform.js` | 動作対象の OS か（Windows か）の判定 |
 | `src/background/service-worker.js` | タブ操作（拡張 API が要るアクション） |
 | `src/options/options.html` / `.css` / `.js` | 設定画面 |
 | `src/options/gesture-symbol.js` | ジェスチャ → 軌跡の座標（純粋関数） |
